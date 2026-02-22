@@ -28,7 +28,7 @@ gcc vm.c -o vm
 
 ### notes:
 1. it uses at&t like syntax without the suffixes
-2. build in assembler
+2. it has build in assembler and byte_code executer
 
 im gonna add more instructions + syscalls + the maroin interpreter from my other projects BUT it will now be a  compiler for the
 custom assembly language i have build on this project so the marion language can be cross-platoform like java VM but light in the future.
