@@ -30,6 +30,6 @@ gcc vm.c -o vm
 1. it uses at&t like syntax without the suffixes
 2. build in assembler
 
-im gonna add more instructions + syscalls + compiler for the
-custom assembly language in the future.
+im gonna add more instructions + syscalls + the maroin interpreter from my other projects BUT it will now be a  compiler for the
+custom assembly language i have build on this project so the marion language can be cross-platoform like java VM but light in the future.
 # mini-vm
