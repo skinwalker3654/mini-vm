@@ -13,9 +13,16 @@ hlt
 ```
 ## example of program
 ```bash
-mov 2 R0
-mov R0 R1
-add 5 R1
+ ; we skip the mov 10 into R2 and we go into .label_name
+jmp label_name
+
+mov 10 R2
+
+.label_name
+    mov 2 R0
+    mov R0 R1
+    add 5 R1
+
 hlt
 # now the register R1 is 7
 ```
