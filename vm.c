@@ -19,6 +19,7 @@ typedef struct cpu_t {
     uint64_t pc;
     label labels[MAX_LABELS];
     int lab_counter;
+    int running;
 } cpu_t;
 
 /*Instructions I = immediate, R = register*/
@@ -59,8 +60,8 @@ int get_label_pc(cpu_t *cpu, const char *name) {
 }
 
 void execute_byte_code(cpu_t *cpu) {
-    int running = 1;
-    while(running) {
+    cpu->running = 1;
+    while(cpu->running) {
         uint64_t opcode = cpu->memory[cpu->pc++];
         switch(opcode) {
             case MOVI: {
@@ -105,11 +106,11 @@ void execute_byte_code(cpu_t *cpu) {
                 break;
             }
             case HLT:
-                running = 0;
+                cpu->running = 0;
                 break;
             default:
                 printf("Invalid opcode %lu at PC=%lu\n", opcode, cpu->pc-1);
-                running = 0;
+                cpu->running = 0;
                 break;
         }
     }
