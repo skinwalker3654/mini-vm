@@ -10,6 +10,7 @@ mov
 add
 sub
 hlt
+jmp
 ```
 ## example of program
 ```bash
