@@ -9,8 +9,8 @@ and pc.
 mov
 add
 sub
-hlt
 jmp
+hlt
 ```
 ## example of program
 ```bash
