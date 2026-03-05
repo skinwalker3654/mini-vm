@@ -38,6 +38,7 @@ je label2
     add 2 R1
     hlt
 # now the register R1 is 4 not 3, because we skiped the label1
+# also the comments dosent work in the real assembler, i only put them  in the README.md
 ```
 
 ## compile and run
