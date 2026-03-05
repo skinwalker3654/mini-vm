@@ -21,7 +21,7 @@ hlt
 ```
 ## example of program
 ```bash
-; we skip the label1 because the R2 is equal to 10 so the comparation is true
+# we skip the label1 because the R2 is equal to 10 so the comparation is true
 mov 10 R2
 cmp 10 R2
 je label2
