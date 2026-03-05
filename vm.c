@@ -19,10 +19,13 @@ typedef struct cpu_t {
     uint64_t pc;
     label labels[MAX_LABELS];
     int lab_counter;
+    int zflag;
+    int sflag;
     int running;
 } cpu_t;
 
 /*Instructions I = immediate, R = register*/
+#define JE 9
 #define JMP 1
 #define HLT 2
 #define MOVI 3
@@ -31,6 +34,13 @@ typedef struct cpu_t {
 #define ADDR 6
 #define SUBI 7
 #define SUBR 8
+#define JNE 10
+#define JL 11
+#define JLE 12
+#define JG 13
+#define JGE 14
+#define CMPI 15
+#define CMPR 16
 
 int register_identity(char *string) {
     if(strlen(string) != 2) return -1;
@@ -100,9 +110,73 @@ void execute_byte_code(cpu_t *cpu) {
                 cpu->regs[regr] -= cpu->regs[regv];
                 break;
             }
+            case CMPI: {
+                uint64_t value = cpu->memory[cpu->pc++];
+                uint64_t reg = cpu->memory[cpu->pc++];
+                int result = cpu->regs[reg] - value;
+                cpu->zflag = (result == 0);
+                cpu->sflag = (result < 0);
+                break;
+            }
+            case CMPR: {
+                uint64_t regv = cpu->memory[cpu->pc++];
+                uint64_t regr = cpu->memory[cpu->pc++];
+                int result = cpu->regs[regr] - cpu->regs[regv];
+                cpu->zflag = (result == 0);
+                cpu->sflag = (result < 0);
+                break;
+            }
             case JMP: {
                 uint64_t addr = cpu->memory[cpu->pc++];
                 cpu->pc = addr;
+                break;
+            }
+            case JE: {
+                uint64_t addr = cpu->memory[cpu->pc++];
+                if(cpu->zflag == 1) {
+                    cpu->pc = addr;
+                    break;
+                }
+                break;
+            }
+            case JLE: {
+                uint64_t addr = cpu->memory[cpu->pc++];
+                if(cpu->zflag == 1 || cpu->sflag == 1) {
+                    cpu->pc = addr;
+                    break;
+                }
+                break;
+            }
+            case JL: {
+                uint64_t addr = cpu->memory[cpu->pc++];
+                if(cpu->sflag == 1) {
+                    cpu->pc = addr;
+                    break;
+                }
+                break;
+            }
+            case JG: {
+                uint64_t addr = cpu->memory[cpu->pc++];
+                if(cpu->zflag == 0 && cpu->sflag == 0) {
+                    cpu->pc = addr;
+                    break;
+                }
+                break;
+            }
+            case JGE: {
+                uint64_t addr = cpu->memory[cpu->pc++];
+                if(cpu->sflag == 0) {
+                    cpu->pc = addr;
+                    break;
+                }
+                break;
+            }
+            case JNE: {
+                uint64_t addr = cpu->memory[cpu->pc++];
+                if(cpu->zflag == 0) {
+                    cpu->pc = addr;
+                    break;
+                }
                 break;
             }
             case HLT:
@@ -140,7 +214,7 @@ void assembler(cpu_t *cpu, const char *file_name) {
             token = strtok(NULL," "); 
         }
 
-        if(counter==0) continue;
+        if(counter == 0) continue;
 
         if(tokens[0][0]=='.') {
             char label_name[BUFF_SIZE];
@@ -158,8 +232,15 @@ void assembler(cpu_t *cpu, const char *file_name) {
         // increment temp_pc according to instruction size
         tokens[counter-1][strcspn(tokens[counter-1],"\n")] = '\0';
 
-        if(!strcmp(tokens[0],"mov") || !strcmp(tokens[0],"add") || !strcmp(tokens[0],"sub")) temp_pc+=3;
-        else if(strcmp(tokens[0],"jmp")==0) temp_pc+=2;
+        if(!strcmp(tokens[0],"mov") || !strcmp(tokens[0],"add") || !strcmp(tokens[0],"sub") || !strcmp(tokens[0],"cmp")) temp_pc+=3; 
+        else if(!strcmp(tokens[0],"jmp") || 
+                !strcmp(tokens[0],"je") ||
+                !strcmp(tokens[0],"jl") ||
+                !strcmp(tokens[0],"jle") ||
+                !strcmp(tokens[0],"jg") ||
+                !strcmp(tokens[0],"jge") ||
+                !strcmp(tokens[0],"jne")) 
+            temp_pc+=2;
         else if(strcmp(tokens[0],"hlt")==0 || strcmp(tokens[0],"syscall")==0) temp_pc+=1;
         else { 
             printf("Invalid opcode '%s'\n",tokens[0]);
@@ -188,6 +269,93 @@ void assembler(cpu_t *cpu, const char *file_name) {
 
         if(tokens[0][0] == '.') continue; 
 
+        if(strcmp(tokens[0],"je")==0) {
+            int addr = get_label_pc(cpu,tokens[1]);
+            if(addr == -1) {
+                printf("Label '%s' not found\n",tokens[1]);
+                fclose(file);
+                return;
+            }
+
+            cpu->memory[pc++] = JE;
+            cpu->memory[pc++] = addr;
+
+            continue;
+        }
+
+        if(strcmp(tokens[0],"jl")==0) {
+            int addr = get_label_pc(cpu,tokens[1]);
+            if(addr == -1) {
+                printf("Label '%s' not found\n",tokens[1]);
+                fclose(file);
+                return;
+            }
+
+            cpu->memory[pc++] = JL;
+            cpu->memory[pc++] = addr;
+
+            continue;
+        }
+
+
+        if(strcmp(tokens[0],"jle")==0) {
+            int addr = get_label_pc(cpu,tokens[1]);
+            if(addr == -1) {
+                printf("Label '%s' not found\n",tokens[1]);
+                fclose(file);
+                return;
+            }
+
+            cpu->memory[pc++] = JLE;
+            cpu->memory[pc++] = addr;
+
+            continue;
+        }
+
+
+        if(strcmp(tokens[0],"jg")==0) {
+            int addr = get_label_pc(cpu,tokens[1]);
+            if(addr == -1) {
+                printf("Label '%s' not found\n",tokens[1]);
+                fclose(file);
+                return;
+            }
+
+            cpu->memory[pc++] = JG;
+            cpu->memory[pc++] = addr;
+
+            continue;
+        }
+
+
+        if(strcmp(tokens[0],"jge")==0) {
+            int addr = get_label_pc(cpu,tokens[1]);
+            if(addr == -1) {
+                printf("Label '%s' not found\n",tokens[1]);
+                fclose(file);
+                return;
+            }
+
+            cpu->memory[pc++] = JGE;
+            cpu->memory[pc++] = addr;
+
+            continue;
+        }
+
+        if(strcmp(tokens[0],"jne")==0) {
+            int addr = get_label_pc(cpu,tokens[1]);
+            if(addr == -1) {
+                printf("Label '%s' not found\n",tokens[1]);
+                fclose(file);
+                return;
+            }
+
+            cpu->memory[pc++] = JNE;
+            cpu->memory[pc++] = addr;
+
+            continue;
+        }
+
         if(strcmp(tokens[0],"jmp")==0) {
             int addr = get_label_pc(cpu,tokens[1]);
             if(addr == -1) { 
@@ -198,6 +366,39 @@ void assembler(cpu_t *cpu, const char *file_name) {
 
             cpu->memory[pc++] = JMP;
             cpu->memory[pc++] = addr;
+
+            continue;
+        }
+
+
+        if(strcmp(tokens[0],"cmp")==0) {
+            if(tokens[1][0]=='R') {
+                int regv = register_identity(tokens[1]);
+                int regr = register_identity(tokens[2]);
+
+                if(regv == -1 || regr == -1) {
+                    printf("Invalid register\n");
+                    fclose(file); 
+                    return; 
+                }
+
+                cpu->memory[pc++] = CMPR;
+                cpu->memory[pc++] = regv;
+                cpu->memory[pc++] = regr;
+            } else {
+                int regr = register_identity(tokens[2]);
+                int value = atoi(tokens[1]);
+
+                if(regr == -1) { 
+                    printf("Invalid register\n"); 
+                    fclose(file);
+                    return; 
+                }
+
+                cpu->memory[pc++] = CMPI;
+                cpu->memory[pc++] = value;
+                cpu->memory[pc++] = regr;
+            }
 
             continue;
         }
@@ -317,9 +518,7 @@ int main(void) {
     assembler(&cpu,"test.asm");
     execute_byte_code(&cpu);
     
-    /* we check if the mov 10 R2 is skiped by the jmp and we also check if 
-     * R1 is 7 because we did mov 2 R0, mov R0 R1 and add 5 R1*/
-    printf("%ld\n",cpu.regs[2]);
+    /*we check if the program skiped the label1 and we check if the value on register 1 is 4 and not 3*/
     printf("%ld\n",cpu.regs[1]);
 
     return 0;

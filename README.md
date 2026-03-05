@@ -10,22 +10,34 @@ mov
 add
 sub
 jmp
+je
+jl
+jle
+jg
+jge
+jne
+cmp
 hlt
 ```
 ## example of program
 ```bash
- ; we skip the mov 10 into R2 and we go into .label_name
-jmp label_name
-
+; we skip the label1 because the R2 is equal to 10 so the comparation is true
 mov 10 R2
+cmp 10 R2
+je label2
 
-.label_name
+.label1
+    mov 1 R0
+    mov R0 R1
+    add 2 R1
+    hlt
+
+.label2
     mov 2 R0
     mov R0 R1
-    add 5 R1
-
-hlt
-# now the register R1 is 7
+    add 2 R1
+    hlt
+# now the register R1 is 4 not 3, because we skiped the label1
 ```
 
 ## compile and run
