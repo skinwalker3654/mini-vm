@@ -8,17 +8,21 @@
 #define BUFF_SIZE 256
 #define MAX_LABELS 100
 
-typedef struct label {
-    char name[BUFF_SIZE];
-    int pc;
-} label;
+typedef struct label_t {
+    char label_name[BUFF_SIZE];
+    int label_address;
+} label_t;
+
+typedef struct labels {
+    label_t labels[MAX_LABELS];
+    int counter;
+} labels;
 
 typedef struct cpu_t {
     uint64_t memory[MEM_SIZE];
     uint64_t regs[REG_COUNT];
     uint64_t pc;
-    label labels[MAX_LABELS];
-    int lab_counter;
+    labels labels;
     int zflag;
     int sflag;
     int running;
@@ -60,9 +64,9 @@ int register_identity(char *string) {
 }
 
 int get_label_pc(cpu_t *cpu, const char *name) {
-    for(int i=0;i<cpu->lab_counter;i++) {
-        if(strcmp(cpu->labels[i].name,name)==0) {
-            return cpu->labels[i].pc;
+    for(int i=0;i<cpu->labels.counter;i++) {
+        if(strcmp(cpu->labels.labels[i].label_name,name)==0) {
+            return cpu->labels.labels[i].label_address;
         }
     }
 
@@ -221,10 +225,10 @@ void assembler(cpu_t *cpu, const char *file_name) {
             strncpy(label_name, tokens[0]+1, BUFF_SIZE);
 
             label_name[strcspn(label_name,"\n")] = '\0';
-            strcpy(cpu->labels[cpu->lab_counter].name, label_name);
+            strcpy(cpu->labels.labels[cpu->labels.counter].label_name, label_name);
 
-            cpu->labels[cpu->lab_counter].pc = temp_pc;
-            cpu->lab_counter++;
+            cpu->labels.labels[cpu->labels.counter].label_address = temp_pc;
+            cpu->labels.counter++;
 
             continue;
         }
