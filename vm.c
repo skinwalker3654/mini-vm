@@ -45,6 +45,10 @@ typedef struct cpu_t {
 #define JGE 14
 #define CMPI 15
 #define CMPR 16
+#define MULI 17
+#define MULR 18
+#define DIVI 19
+#define DIVR 20
 
 int register_identity(char *string) {
     if(strlen(string) != 2) return -1;
@@ -112,6 +116,30 @@ void execute_byte_code(cpu_t *cpu) {
                 uint64_t regv = cpu->memory[cpu->pc++];
                 uint64_t regr = cpu->memory[cpu->pc++];
                 cpu->regs[regr] -= cpu->regs[regv];
+                break;
+            }
+            case MULI: {
+                uint64_t value = cpu->memory[cpu->pc++];
+                uint64_t reg = cpu->memory[cpu->pc++];
+                cpu->regs[reg] *= value;
+                break;
+            }
+            case MULR: {
+                uint64_t regv = cpu->memory[cpu->pc++];
+                uint64_t regr = cpu->memory[cpu->pc++];
+                cpu->regs[regr] *= cpu->memory[regv];
+                break;
+            }
+            case DIVI: {
+                uint64_t value = cpu->memory[cpu->pc++];
+                uint64_t reg = cpu->memory[cpu->pc++];
+                cpu->regs[reg] /= value;
+                break;
+            }
+            case DIVR: {
+                uint64_t regv = cpu->memory[cpu->pc++];
+                uint64_t regr = cpu->memory[cpu->pc++];
+                cpu->regs[regr] /= cpu->memory[regv];
                 break;
             }
             case CMPI: {
@@ -236,7 +264,12 @@ void assembler(cpu_t *cpu, const char *file_name) {
         // increment temp_pc according to instruction size
         tokens[counter-1][strcspn(tokens[counter-1],"\n")] = '\0';
 
-        if(!strcmp(tokens[0],"mov") || !strcmp(tokens[0],"add") || !strcmp(tokens[0],"sub") || !strcmp(tokens[0],"cmp")) temp_pc+=3; 
+        if(!strcmp(tokens[0],"mov") 
+                || !strcmp(tokens[0],"add") 
+                || !strcmp(tokens[0],"sub") 
+                || !strcmp(tokens[0],"div")
+                || !strcmp(tokens[0],"mul")
+                || !strcmp(tokens[0],"cmp")) temp_pc+=3; 
         else if(!strcmp(tokens[0],"jmp") || 
                 !strcmp(tokens[0],"je") ||
                 !strcmp(tokens[0],"jl") ||
@@ -502,6 +535,69 @@ void assembler(cpu_t *cpu, const char *file_name) {
             continue;
         }
 
+        if(strcmp(tokens[0],"mul")==0) {
+            if(tokens[1][0]=='R') {
+                int regv = register_identity(tokens[1]);
+                int regr = register_identity(tokens[2]);
+
+                if(regv == -1 || regr == -1) {
+                    printf("Invalid register\n"); 
+                    fclose(file); 
+                    return; \
+                }
+
+                cpu->memory[pc++] = MULR;
+                cpu->memory[pc++] = regv;
+                cpu->memory[pc++] = regr;
+            } else {
+                int regr = register_identity(tokens[2]);
+                int value = atoi(tokens[1]);
+
+                if(regr == -1) { 
+                    printf("Invalid register\n");
+                    fclose(file); 
+                    return; 
+                }
+
+                cpu->memory[pc++] = MULI;
+                cpu->memory[pc++] = value;
+                cpu->memory[pc++] = regr;
+            }
+
+            continue;
+        }
+
+        if(strcmp(tokens[0],"div")==0) {
+            if(tokens[1][0]=='R') {
+                int regv = register_identity(tokens[1]);
+                int regr = register_identity(tokens[2]);
+
+                if(regv == -1 || regr == -1) {
+                    printf("Invalid register\n"); 
+                    fclose(file); 
+                    return; \
+                }
+
+                cpu->memory[pc++] = DIVR;
+                cpu->memory[pc++] = regv;
+                cpu->memory[pc++] = regr;
+            } else {
+                int regr = register_identity(tokens[2]);
+                int value = atoi(tokens[1]);
+
+                if(regr == -1) { 
+                    printf("Invalid register\n");
+                    fclose(file); 
+                    return; 
+                }
+
+                cpu->memory[pc++] = DIVI;
+                cpu->memory[pc++] = value;
+                cpu->memory[pc++] = regr;
+            }
+
+            continue;
+        }
         if(strcmp(tokens[0],"hlt")==0) { 
             cpu->memory[pc++] = HLT;
             continue; 
@@ -522,7 +618,7 @@ int main(void) {
     assembler(&cpu,"test.asm");
     execute_byte_code(&cpu);
     
-    /*we check if the program skiped the label1 and we check if the value on register 1 is 4 and not 3*/
+    /*we check if the program skiped the label1 and we check if the value on register1 is 10 and not 3*/
     printf("%ld\n",cpu.regs[1]);
 
     return 0;

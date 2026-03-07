@@ -9,6 +9,8 @@ and pc.
 mov
 add
 sub
+mul
+div
 jmp
 je
 jl
@@ -36,8 +38,10 @@ je label2
     mov 2 R0
     mov R0 R1
     add 2 R1
+    div 2 R1
+    mul 5 R1
     hlt
-# now the register R1 is 4 not 3, because we skiped the label1
+# now the register R1 is 10 not 3, because we skiped the label1
 # also the comments dosent work in the real assembler, i have only puted them in the README.md
 ```
 
