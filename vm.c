@@ -64,6 +64,9 @@ typedef struct cpu_t {
 #define MULR 18
 #define DIVI 19
 #define DIVR 20
+#define SYSCALL 21
+
+#define SYS_WRITE 1
 
 int register_identity(char *string) {
     if(strlen(string) != 2) return -1;
@@ -152,7 +155,7 @@ void execute_byte_code(cpu_t *cpu) {
             case MULR: {
                 uint64_t regv = cpu->memory[cpu->cpc++];
                 uint64_t regr = cpu->memory[cpu->cpc++];
-                cpu->regs[regr] *= cpu->memory[regv];
+                cpu->regs[regr] *= cpu->regs[regv];
                 break;
             }
             case DIVI: {
@@ -164,7 +167,7 @@ void execute_byte_code(cpu_t *cpu) {
             case DIVR: {
                 uint64_t regv = cpu->memory[cpu->cpc++];
                 uint64_t regr = cpu->memory[cpu->cpc++];
-                cpu->regs[regr] /= cpu->memory[regv];
+                cpu->regs[regr] /= cpu->regs[regv];
                 break;
             }
             case CMPI: {
@@ -236,9 +239,30 @@ void execute_byte_code(cpu_t *cpu) {
                 }
                 break;
             }
-            case HLT:
+            case HLT: {
                 cpu->running = 0;
                 break;
+            }
+            case SYSCALL: {
+                switch(cpu->regs[0]) {
+                    case SYS_WRITE: {
+                        int addr = cpu->regs[1];
+                        int len = cpu->regs[2];
+
+                        for(int i=0; i<len; i++) {
+                            printf("%c",(char)cpu->memory[addr + i]);
+                        }
+
+                        break;
+                    }
+
+                    default:
+                        printf("Invalid syscall %ld\n",cpu->regs[0]);
+                        cpu->running = 0;
+                        break;
+                }
+                break;
+            }
             default:
                 printf("Invalid opcode %lu at PC=%lu\n", opcode, cpu->cpc-1);
                 cpu->running = 0;
@@ -286,8 +310,8 @@ void assembler(cpu_t *cpu, const char *file_name) {
                 continue;
             }
 
-            if(isalpha(line[pos]) || line[pos] == '_') {
-                while(isalnum(line[pos])) {
+            if(isalpha(line[pos])) {
+                while(isalnum(line[pos]) || line[pos] == '_') {
                     buffer[buffer_counter++] = line[pos++];
                 }
 
@@ -310,6 +334,11 @@ void assembler(cpu_t *cpu, const char *file_name) {
             if(line[pos] == '"') {
                 pos++;
                 while(line[pos] != '"' && line[pos] != '\0') {
+                    if(line[pos] == '\\' && line[pos+1] == 'n') {
+                        buffer[buffer_counter++] = '\n';
+                        pos+=2;
+                        continue;
+                    }
                     buffer[buffer_counter++] = line[pos++];
                 }
 
@@ -337,6 +366,23 @@ void assembler(cpu_t *cpu, const char *file_name) {
             continue;
         }
 
+        if(strcmp(tokens[0],"string")==0) {
+            char name[256];
+            strcpy(name,tokens[1]);
+            int address = cpu->vpc;
+
+            for(int i=0; i<strlen(tokens[2]); i++) {
+                cpu->memory[cpu->vpc] = (int)(tokens[2][i]);
+                cpu->vpc++;
+            }
+
+            strcpy(cpu->values.values[cpu->values.counter].value_name,name);
+            cpu->values.values[cpu->values.counter].value_address = address;
+            cpu->values.counter++;
+
+            continue;
+        }
+
         // increment temp_cpc according to instruction size
         tokens[counter-1][strcspn(tokens[counter-1],"\n")] = '\0';
 
@@ -345,7 +391,6 @@ void assembler(cpu_t *cpu, const char *file_name) {
                 || !strcmp(tokens[0],"sub") 
                 || !strcmp(tokens[0],"div")
                 || !strcmp(tokens[0],"mul")
-                || !strcmp(tokens[0],"string")
                 || !strcmp(tokens[0],"cmp")) temp_cpc+=3; 
         else if(!strcmp(tokens[0],"jmp") || 
                 !strcmp(tokens[0],"je") ||
@@ -392,8 +437,8 @@ void assembler(cpu_t *cpu, const char *file_name) {
                 continue;
             }
 
-            if(isalpha(line[pos]) || line[pos] == '_') {
-                while(isalnum(line[pos])) {
+            if(isalpha(line[pos])) {
+                while(isalnum(line[pos]) || line[pos] == '_') {
                     buffer[buffer_counter++] = line[pos++];
                 }
 
@@ -419,6 +464,7 @@ void assembler(cpu_t *cpu, const char *file_name) {
                     if(line[pos] == '\\' && line[pos+1] == 'n') {
                         buffer[buffer_counter++] = '\n';
                         pos+=2;
+                        continue;
                     }
                     buffer[buffer_counter++] = line[pos++];
                 }
@@ -437,21 +483,10 @@ void assembler(cpu_t *cpu, const char *file_name) {
         if(counter == 0) continue;
 
         if(tokens[0][0] == '.') continue; 
+        if(strcmp(tokens[0],"string")==0) continue;
 
-        if(strcmp(tokens[0],"string")==0) {
-            char name[256];
-            strcpy(name,tokens[1]);
-            int address = cpu->vpc;
-
-            for(int i=0; i<strlen(tokens[2]); i++) {
-                cpu->memory[cpu->vpc] = (int)(tokens[2][i]);
-                cpu->vpc++;
-            }
-
-            strcpy(cpu->values.values[cpu->values.counter].value_name,name);
-            cpu->values.values[cpu->values.counter].value_address = address;
-            cpu->values.counter++;
-
+        if(strcmp(tokens[0],"syscall")==0) {
+            cpu->memory[cpc++] = SYSCALL;
             continue;
         }
 
@@ -793,8 +828,6 @@ int main(void) {
     
     /*we check if the program skiped the label1 and we check if the value on register1 is 10 and not 3*/
     printf("%ld\n",cpu.regs[1]);
-    printf("%ld\n",cpu.regs[2]); //expected output 512
-    printf("%ld\n",cpu.regs[3]); //expected output 520
 
     return 0;
 }

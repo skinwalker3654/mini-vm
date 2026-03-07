@@ -1,4 +1,4 @@
-string name "hello\n"
+string name1 "hello\n"
 string name2 "hi\n"
 
 mov 10 R2
@@ -12,11 +12,20 @@ je label2
     hlt
 
 .label2
+    mov 1 R0
+    mov name1 R1
+    mov 6 R2
+    syscall
+
+    mov 1 R0
+    mov name2 R1
+    mov 3 R2
+    syscall
+
     mov 2 R0
     mov R0 R1
     add 2 R1
     div 2 R1
     mul 5 R1
-    mov name R2
-    mov name2 R3
+
     hlt

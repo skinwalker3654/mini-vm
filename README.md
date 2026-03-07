@@ -38,15 +38,24 @@ je label2
     hlt
 
 .label2
+    mov 1 R0
+    mov name1 R1
+    mov 6 R2
+    syscall
+
+    mov 1 R0
+    mov name2 R1
+    mov 3 R2
+    syscall
+    
     mov 2 R0
     mov R0 R1
     add 2 R1
     div 2 R1
     mul 5 R1
-    mov name1 R2
-    mov name2 R3
+
     hlt
-# now the register R1 is 10 not 3, because we skiped the label1
+# now the register R1 is 10 not 3, because we skiped the label1. and it also prints to the screen hello and hi beacause of the sys_write
 # also the comments dosent work in the real assembler, i have only puted them in the README.md
 ```
 
@@ -60,6 +69,6 @@ gcc vm.c -o vm
 1. it uses at&t like syntax without the suffixes
 2. it has build in assembler and byte_code executer
 
-im gonna add more instructions + syscalls + the maroin interpreter from my other projects BUT it will now be a  compiler for the
+im gonna add more instructions + the maroin interpreter from my other projects BUT it will now be a  compiler for the
 custom assembly language i have build on this project so the marion language can be cross-platoform like java VM but light in the future.
 # mini-vm
