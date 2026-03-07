@@ -64,6 +64,8 @@ typedef struct cpu_t {
 #define MULR 18
 #define DIVI 19
 #define DIVR 20
+#define STOREI 22
+#define STORER 23
 #define SYSCALL 21
 
 #define SYS_WRITE 1
@@ -168,6 +170,18 @@ void execute_byte_code(cpu_t *cpu) {
                 uint64_t regv = cpu->memory[cpu->cpc++];
                 uint64_t regr = cpu->memory[cpu->cpc++];
                 cpu->regs[regr] /= cpu->regs[regv];
+                break;
+            }
+            case STOREI: {
+                uint64_t value = cpu->memory[cpu->cpc++];
+                uint64_t address = cpu->memory[cpu->cpc++];
+                cpu->memory[address] = value;
+                break;
+            }
+            case STORER: {
+                uint64_t reg = cpu->memory[cpu->cpc++];
+                uint64_t address = cpu->memory[cpu->cpc++];
+                cpu->memory[address] = cpu->regs[reg];
                 break;
             }
             case CMPI: {
@@ -391,6 +405,7 @@ void assembler(cpu_t *cpu, const char *file_name) {
                 || !strcmp(tokens[0],"sub") 
                 || !strcmp(tokens[0],"div")
                 || !strcmp(tokens[0],"mul")
+                || !strcmp(tokens[0],"store")
                 || !strcmp(tokens[0],"cmp")) temp_cpc+=3; 
         else if(!strcmp(tokens[0],"jmp") || 
                 !strcmp(tokens[0],"je") ||
@@ -673,6 +688,31 @@ void assembler(cpu_t *cpu, const char *file_name) {
                 cpu->memory[cpc++] = MOVI;
                 cpu->memory[cpc++] = value;
                 cpu->memory[cpc++] = regr;
+            }
+
+            continue;
+        }
+
+        if(strcmp(tokens[0],"store")==0) {
+            if(tokens[1][0]=='R') {
+                int reg = register_identity(tokens[1]);
+
+                if(reg == -1) {
+                    printf("Invalid register\n");
+                    fclose(file); 
+                    return; 
+                }
+
+                cpu->memory[cpc++] = STORER;
+                cpu->memory[cpc++] = reg;
+                cpu->memory[cpc++] = atoi(tokens[2]);
+            } else {
+                int value = atoi(tokens[1]);
+                int address = atoi(tokens[2]);
+
+                cpu->memory[cpc++] = STOREI;
+                cpu->memory[cpc++] = value;
+                cpu->memory[cpc++] = address;
             }
 
             continue;

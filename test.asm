@@ -1,5 +1,4 @@
-string name1 "hello\n"
-string name2 "hi\n"
+string name "hello\n"
 
 mov 10 R2
 cmp 10 R2
@@ -13,12 +12,16 @@ je label2
 
 .label2
     mov 1 R0
-    mov name1 R1
+    mov name R1
     mov 6 R2
     syscall
 
+    store 104 520
+    store 105 521
+    store 10 522
+
     mov 1 R0
-    mov name2 R1
+    mov 520 R1
     mov 3 R2
     syscall
 

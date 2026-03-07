@@ -11,6 +11,7 @@ add
 sub
 mul
 div
+store
 jmp
 je
 jl
@@ -24,8 +25,7 @@ hlt
 ## example of program
 ```bash
 # we skip the label1 because the R2 is equal to 10 so the comparation is true
-string name1 "hello\n"
-string name2 "hi\n"
+string name "hello\n"
 
 mov 10 R2
 cmp 10 R2
@@ -39,12 +39,16 @@ je label2
 
 .label2
     mov 1 R0
-    mov name1 R1
+    mov name R1
     mov 6 R2
     syscall
 
+    store 104 520
+    store 105 521
+    store 10 522
+
     mov 1 R0
-    mov name2 R1
+    mov 520 R1
     mov 3 R2
     syscall
     
@@ -55,7 +59,7 @@ je label2
     mul 5 R1
 
     hlt
-# now the register R1 is 10 not 3, because we skiped the label1. and it also prints to the screen hello and hi beacause of the sys_write
+# now the register R1 is 10 not 3, because we skiped the label1. and it also prints to the screen hello and hi(because we store the characters manually) beacause of the sys_write
 # also the comments dosent work in the real assembler, i have only puted them in the README.md
 ```
 
