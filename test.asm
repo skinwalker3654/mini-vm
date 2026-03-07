@@ -1,3 +1,6 @@
+string name "hello\n"
+string name2 "hi\n"
+
 mov 10 R2
 cmp 10 R2
 je label2
@@ -14,4 +17,6 @@ je label2
     add 2 R1
     div 2 R1
     mul 5 R1
+    mov name R2
+    mov name2 R3
     hlt
