@@ -64,6 +64,8 @@ typedef struct cpu_t {
 #define MULR 18
 #define DIVI 19
 #define DIVR 20
+#define INC 24
+#define DEC 25
 #define STOREI 22
 #define STORER 23
 #define SYSCALL 21
@@ -170,6 +172,16 @@ void execute_byte_code(cpu_t *cpu) {
                 uint64_t regv = cpu->memory[cpu->cpc++];
                 uint64_t regr = cpu->memory[cpu->cpc++];
                 cpu->regs[regr] /= cpu->regs[regv];
+                break;
+            }
+            case INC: {
+                uint64_t reg = cpu->memory[cpu->cpc++];
+                cpu->regs[reg]++;
+                break;
+            }
+            case DEC: {
+                uint64_t reg = cpu->memory[cpu->cpc++];
+                cpu->regs[reg]--;
                 break;
             }
             case STOREI: {
@@ -413,8 +425,9 @@ void assembler(cpu_t *cpu, const char *file_name) {
                 !strcmp(tokens[0],"jle") ||
                 !strcmp(tokens[0],"jg") ||
                 !strcmp(tokens[0],"jge") ||
-                !strcmp(tokens[0],"jne")) 
-            temp_cpc+=2;
+                !strcmp(tokens[0],"jne") ||
+                !strcmp(tokens[0],"inc") ||
+                !strcmp(tokens[0],"dec")) temp_cpc+=2;
         else if(strcmp(tokens[0],"hlt")==0 || strcmp(tokens[0],"syscall")==0) temp_cpc+=1;
         else { 
             printf("Invalid opcode '%s'\n",tokens[0]);
@@ -502,6 +515,32 @@ void assembler(cpu_t *cpu, const char *file_name) {
 
         if(strcmp(tokens[0],"syscall")==0) {
             cpu->memory[cpc++] = SYSCALL;
+            continue;
+        }
+
+        if(strcmp(tokens[0],"inc")==0) {
+            int reg = register_identity(tokens[1]);
+            if(reg == -1) {
+                printf("Invalid register '%s'\n",tokens[1]);
+                return;
+            }
+
+            cpu->memory[cpc++] = INC;
+            cpu->memory[cpc++] = reg;
+
+            continue;
+        }
+
+        if(strcmp(tokens[0],"dec")==0) {
+            int reg = register_identity(tokens[1]);
+            if(reg == -1) {
+                printf("Invalid register '%s'\n",tokens[1]);
+                return;
+            }
+
+            cpu->memory[cpc++] = DEC;
+            cpu->memory[cpc++] = reg;
+
             continue;
         }
 
@@ -614,20 +653,21 @@ void assembler(cpu_t *cpu, const char *file_name) {
                 int regr = register_identity(tokens[2]);
 
                 if(regv == -1 || regr == -1) {
-                    printf("Invalid register\n");
+                    printf("Invalid register '%s' or '%s'\n",tokens[1],tokens[2]);
                     fclose(file); 
                     return; 
                 }
+
 
                 cpu->memory[cpc++] = CMPR;
                 cpu->memory[cpc++] = regv;
                 cpu->memory[cpc++] = regr;
             } else {
-                int regr = register_identity(tokens[2]);
                 int value = atoi(tokens[1]);
+                int regr = register_identity(tokens[2]);
 
                 if(regr == -1) { 
-                    printf("Invalid register\n"); 
+                    printf("Invalid register '%s'\n",tokens[2]); 
                     fclose(file);
                     return; 
                 }
@@ -646,7 +686,7 @@ void assembler(cpu_t *cpu, const char *file_name) {
                 int regr = register_identity(tokens[2]);
 
                 if(regv == -1 || regr == -1) {
-                    printf("Invalid register\n");
+                    printf("Invalid register '%s' or '%s'\n",tokens[1],tokens[2]);
                     fclose(file); 
                     return; 
                 }
@@ -666,7 +706,7 @@ void assembler(cpu_t *cpu, const char *file_name) {
 
                     int regr = register_identity(tokens[2]);
                     if(regr == -1) { 
-                        printf("Invalid register\n"); 
+                        printf("Invalid register '%s'\n",tokens[2]); 
                         fclose(file);
                         return; 
                     }
@@ -680,7 +720,7 @@ void assembler(cpu_t *cpu, const char *file_name) {
 
                 int regr = register_identity(tokens[2]);
                 if(regr == -1) { 
-                    printf("Invalid register\n"); 
+                    printf("Invalid register '%s'\n",tokens[2]); 
                     fclose(file);
                     return; 
                 }
@@ -698,7 +738,7 @@ void assembler(cpu_t *cpu, const char *file_name) {
                 int reg = register_identity(tokens[1]);
 
                 if(reg == -1) {
-                    printf("Invalid register\n");
+                    printf("Invalid register '%s'\n",tokens[1]);
                     fclose(file); 
                     return; 
                 }
@@ -724,7 +764,7 @@ void assembler(cpu_t *cpu, const char *file_name) {
                 int regr = register_identity(tokens[2]);
 
                 if(regv == -1 || regr == -1) {
-                    printf("Invalid register\n"); 
+                    printf("Invalid register '%s' or '%s'\n",tokens[1],tokens[2]); 
                     fclose(file); 
                     return; \
                 }
@@ -733,11 +773,11 @@ void assembler(cpu_t *cpu, const char *file_name) {
                 cpu->memory[cpc++] = regv;
                 cpu->memory[cpc++] = regr;
             } else {
-                int regr = register_identity(tokens[2]);
                 int value = atoi(tokens[1]);
+                int regr = register_identity(tokens[2]);
 
                 if(regr == -1) { 
-                    printf("Invalid register\n");
+                    printf("Invalid register '%s'\n",tokens[2]);
                     fclose(file); 
                     return; 
                 }
@@ -756,7 +796,7 @@ void assembler(cpu_t *cpu, const char *file_name) {
                 int regr = register_identity(tokens[2]);
 
                 if(regv == -1 || regr == -1) {
-                    printf("Invalid register\n");
+                    printf("Invalid register '%s' or '%s'\n",tokens[1],tokens[2]);
                     fclose(file);
                     return; 
                 }
@@ -765,10 +805,11 @@ void assembler(cpu_t *cpu, const char *file_name) {
                 cpu->memory[cpc++] = regv;
                 cpu->memory[cpc++] = regr;
             } else {
-                int regr = register_identity(tokens[2]);
                 int value = atoi(tokens[1]);
+                int regr = register_identity(tokens[2]);
+
                 if(regr == -1) { 
-                    printf("Invalid register\n");
+                    printf("Invalid register '%s'\n",tokens[2]);
                     fclose(file); 
                     return; 
                 }
@@ -787,7 +828,7 @@ void assembler(cpu_t *cpu, const char *file_name) {
                 int regr = register_identity(tokens[2]);
 
                 if(regv == -1 || regr == -1) {
-                    printf("Invalid register\n"); 
+                    printf("Invalid register '%s' or '%s'\n",tokens[1],tokens[2]);
                     fclose(file); 
                     return; \
                 }
@@ -796,11 +837,11 @@ void assembler(cpu_t *cpu, const char *file_name) {
                 cpu->memory[cpc++] = regv;
                 cpu->memory[cpc++] = regr;
             } else {
-                int regr = register_identity(tokens[2]);
                 int value = atoi(tokens[1]);
+                int regr = register_identity(tokens[2]);
 
                 if(regr == -1) { 
-                    printf("Invalid register\n");
+                    printf("Invalid register '%s'\n",tokens[2]);
                     fclose(file); 
                     return; 
                 }
@@ -819,7 +860,7 @@ void assembler(cpu_t *cpu, const char *file_name) {
                 int regr = register_identity(tokens[2]);
 
                 if(regv == -1 || regr == -1) {
-                    printf("Invalid register\n"); 
+                    printf("Invalid register '%s or '%s\n",tokens[1],tokens[2]); 
                     fclose(file); 
                     return; \
                 }
@@ -828,11 +869,11 @@ void assembler(cpu_t *cpu, const char *file_name) {
                 cpu->memory[cpc++] = regv;
                 cpu->memory[cpc++] = regr;
             } else {
-                int regr = register_identity(tokens[2]);
                 int value = atoi(tokens[1]);
+                int regr = register_identity(tokens[2]);
 
                 if(regr == -1) { 
-                    printf("Invalid register\n");
+                    printf("Invalid register '%s'\n",tokens[2]);
                     fclose(file); 
                     return; 
                 }
@@ -850,7 +891,7 @@ void assembler(cpu_t *cpu, const char *file_name) {
             continue; 
         }
 
-        printf("Invalid opcode '%s'\n",tokens[0]);
+        printf("Invalid opcode '%s' at PC=%ld\n",tokens[0],cpu->cpc-1);
         fclose(file);
 
         return;
@@ -860,7 +901,7 @@ void assembler(cpu_t *cpu, const char *file_name) {
 }
 
 int main(void) {
-    cpu_t cpu = {0};
+    cpu_t cpu = {-1};
     cpu.vpc = VPC;
 
     assembler(&cpu,"test.asm");
@@ -868,6 +909,5 @@ int main(void) {
     
     /*we check if the program skiped the label1 and we check if the value on register1 is 10 and not 3*/
     printf("%ld\n",cpu.regs[1]);
-
     return 0;
 }
