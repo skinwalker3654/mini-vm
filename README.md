@@ -89,7 +89,7 @@ je label2
 vim vm.c
 
 # go to the end of the file and remove the lines
-# /*we check if the program skiped the label1 and we check if the value on register1 is 10 and not 3 and if register 4 has loaded the 105 succesfully*/
+/*we check if the program skiped the label1 and we check if the value on register1 is 10 and not 3 and if register 4 has loaded the 105 succesfully*/
 printf("%ld\n",cpu.regs[1]);
 printf("%ld\n",cpu.regs[4]);
 
