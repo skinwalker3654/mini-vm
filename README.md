@@ -115,6 +115,6 @@ make clean
 1. it uses at&t like syntax without the suffixes
 2. it has build in assembler and byte_code executer
 
-im gonna add more instructions + the maroin interpreter from my other projects BUT it will now be a  compiler for the
-custom assembly language i have build on this project so the marion language can be cross-platoform like java VM but light in the future.
+im gonna add more instructions + the marion interpreter from my other projects BUT it will now be a compiler for the
+custom assembly language i have build on this project so the marion language can be cross-platform like the java VM but lighter. In the future.
 # mini-vm
