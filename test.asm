@@ -2,6 +2,9 @@
 string msg1 "hello\n"
 string msg2 "message from loop\n"
 
+number num1 1
+number num2 2
+
 # here we do a comparation and decide in wich label the cpu should jmp
 mov 10 R2
 cmp 10 R2
@@ -21,13 +24,13 @@ je label2
     syscall
 
     # we store manualy the word "hi\n" in the code section after the "hello\n"
-    store 104 536
-    store 105 537
-    store 10 538
+    store 104 538
+    store 105 539
+    store 10 540
 
     # we now print the "hi\n"
     mov 1 R0
-    mov 536 R1
+    mov 538 R1
     mov 3 R2
     syscall
 
@@ -58,6 +61,8 @@ je label2
     mul 5 R1
 
     # R4 should be 105 now because this is the value stored in the address of 537
-    load 537 R4
+    load 539 R4
+    load 536 R5
+    load 537 R6
 
     hlt

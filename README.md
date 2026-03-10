@@ -31,6 +31,9 @@ hlt
 string msg1 "hello\n"
 string msg2 "message for loop\n"
 
+number num1 1
+number num2 2
+
 mov 10 R2
 cmp 10 R2
 je label2
@@ -47,12 +50,12 @@ je label2
     mov 6 R2
     syscall
 
-    store 104 535
-    store 105 536
-    store 10 537
+    store 104 538
+    store 105 539
+    store 10 540
 
     mov 1 R0
-    mov 535 R1
+    mov 538 R1
     mov 3 R2
     syscall
 
@@ -76,11 +79,14 @@ je label2
     div 2 R1
     mul 5 R1
 
-    load 536 R4
+    load 539 R4
+    load 536 R5
+    load 537 R6
+
     hlt
 # now the register R1 is 10 not 3, because we skiped the label1, the R4 is 105 because we loaded the value from the address 536
 # and it also prints to the screen hello and hi(because we store the characters manually) 
-# beacause of the sys_write AND it loops through 10 and prints "message for loop"
+# beacause of the sys_write AND it loops through 10 and prints "message for loop" and now the registers R4 R5 and R6 are equal to 105 1 2
 ```
 
 ## compile
@@ -88,10 +94,14 @@ je label2
 # firstly open the file vm.c with any text editor you want, example
 vim vm.c
 
-# go to the end of the file and remove the lines
+# then go to the bottom of the file and remove this lines of code
 /*we check if the program skiped the label1 and we check if the value on register1 is 10 and not 3 and if register 4 has loaded the 105 succesfully*/
 printf("%ld\n",cpu.regs[1]);
 printf("%ld\n",cpu.regs[4]);
+
+/*we check if the registers 5 and 6 have the values of 1 and 2 because we loaded them from the memory*/
+printf("%ld\n",cpu.regs[5]);
+printf("%ld\n",cpu.regs[6]);
 
 # and lastly run
 gcc vm.c -o vm
