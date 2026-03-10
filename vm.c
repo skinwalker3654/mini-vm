@@ -330,6 +330,10 @@ void assembler(cpu_t *cpu, const char *file_name) {
             char buffer[256];
             int buffer_counter = 0;
 
+            if(line[pos] == '#') {
+                while(line[pos] != '\n') pos++;
+            }
+
             if(line[pos] == '.') {
                 buffer[buffer_counter++] = line[pos++];
 
@@ -354,7 +358,6 @@ void assembler(cpu_t *cpu, const char *file_name) {
             }
 
             if(isdigit(line[pos])) {
-
                 while(isdigit(line[pos])) {
                     buffer[buffer_counter++] = line[pos++];
                 }
@@ -460,6 +463,10 @@ void assembler(cpu_t *cpu, const char *file_name) {
 
             char buffer[256];
             int buffer_counter = 0;
+
+            if(line[pos] == '#') {
+                while(line[pos] != '\n') pos++;
+            }
 
             if(line[pos] == '.') {
                 buffer[buffer_counter++] = line[pos++];
