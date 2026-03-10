@@ -68,6 +68,7 @@ typedef struct cpu_t {
 #define DEC 25
 #define STOREI 22
 #define STORER 23
+#define LOAD 26
 #define SYSCALL 21
 
 #define SYS_WRITE 1
@@ -182,6 +183,12 @@ void execute_byte_code(cpu_t *cpu) {
             case DEC: {
                 uint64_t reg = cpu->memory[cpu->cpc++];
                 cpu->regs[reg]--;
+                break;
+            }
+            case LOAD: {
+                uint64_t address = cpu->memory[cpu->cpc++];
+                uint64_t reg = cpu->memory[cpu->cpc++];
+                cpu->regs[reg] = cpu->memory[address];
                 break;
             }
             case STOREI: {
@@ -418,6 +425,7 @@ void assembler(cpu_t *cpu, const char *file_name) {
                 || !strcmp(tokens[0],"div")
                 || !strcmp(tokens[0],"mul")
                 || !strcmp(tokens[0],"store")
+                || !strcmp(tokens[0],"load")
                 || !strcmp(tokens[0],"cmp")) temp_cpc+=3; 
         else if(!strcmp(tokens[0],"jmp") || 
                 !strcmp(tokens[0],"je") ||
@@ -733,6 +741,21 @@ void assembler(cpu_t *cpu, const char *file_name) {
             continue;
         }
 
+        if(strcmp(tokens[0],"load")==0) {
+            int reg = register_identity(tokens[2]);
+            if(reg == -1) {
+                printf("Invalid register '%s'\n",tokens[2]);
+                fclose(file);
+                return;
+            }
+
+            cpu->memory[cpc++] = LOAD;
+            cpu->memory[cpc++] = atoi(tokens[1]);
+            cpu->memory[cpc++] = reg;
+
+            continue;
+        }
+
         if(strcmp(tokens[0],"store")==0) {
             if(tokens[1][0]=='R') {
                 int reg = register_identity(tokens[1]);
@@ -907,7 +930,9 @@ int main(void) {
     assembler(&cpu,"test.asm");
     execute_byte_code(&cpu);
     
-    /*we check if the program skiped the label1 and we check if the value on register1 is 10 and not 3*/
+    /*we check if the program skiped the label1 and we check if the value on register1 is 10 and not 3 and if register 4 has loaded the 105 succesfully*/
     printf("%ld\n",cpu.regs[1]);
+    printf("%ld\n",cpu.regs[4]);
+
     return 0;
 }

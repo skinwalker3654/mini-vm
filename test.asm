@@ -46,4 +46,5 @@ je label2
     div 2 R1
     mul 5 R1
 
+    load 536 R4
     hlt

@@ -14,6 +14,7 @@ div
 inc
 dec
 store
+load
 jmp
 je
 jl
@@ -75,10 +76,11 @@ je label2
     div 2 R1
     mul 5 R1
 
+    load 536 R4
     hlt
-# now the register R1 is 10 not 3, because we skiped the label1 and it also prints to the screen hello and hi(because we store the characters manually) 
-# beacause of the sys_write AND it loops through 10 and
-# prints "message for loop"
+# now the register R1 is 10 not 3, because we skiped the label1, the R4 is 105 because we loaded the value from the address 536
+# and it also prints to the screen hello and hi(because we store the characters manually) 
+# beacause of the sys_write AND it loops through 10 and prints "message for loop"
 # also the comments dosent work in the real assembler, i have only puted them in the README.md
 ```
 
