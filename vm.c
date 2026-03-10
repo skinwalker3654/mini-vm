@@ -923,11 +923,17 @@ void assembler(cpu_t *cpu, const char *file_name) {
     fclose(file);
 }
 
-int main(void) {
+int main(int argc,char *argv[]) {
+    if(argc != 2) {
+        printf("Error: Invalid usage\n");
+        printf("Correct usage: ./vm <file_name>\n");
+        return 1;
+    }
+
     cpu_t cpu = {-1};
     cpu.vpc = VPC;
 
-    assembler(&cpu,"test.asm");
+    assembler(&cpu,argv[1]);
     execute_byte_code(&cpu);
     
     /*we check if the program skiped the label1 and we check if the value on register1 is 10 and not 3 and if register 4 has loaded the 105 succesfully*/

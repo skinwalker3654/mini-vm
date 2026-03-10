@@ -84,10 +84,31 @@ je label2
 # also the comments dosent work in the real assembler, i have only puted them in the README.md
 ```
 
-## compile and run
+## compile
 ```bash
+# firstly open the file vm.c with any text editor you want, example
+vim vm.c
+
+# go to the end of the file and remove the lines
+# /*we check if the program skiped the label1 and we check if the value on register1 is 10 and not 3 and if register 4 has loaded the 105 succesfully*/
+printf("%ld\n",cpu.regs[1]);
+printf("%ld\n",cpu.regs[4]);
+
+# and lastly run
 gcc vm.c -o vm
-./vm
+
+# now to run it you simply do
+./vm assembly_file # you put the name of the file with the assembly code
+```
+
+## run test
+```bash
+make test
+```
+
+## delete test
+```bash
+make clean
 ```
 
 ### notes:
