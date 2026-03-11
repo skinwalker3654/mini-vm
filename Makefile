@@ -1,7 +1,7 @@
 source = vm.c
 testfile = test.asm
 cc = gcc
-target = testfile
+target = vm
 
 test: $(source) 
 	@echo "compiling the test..."
