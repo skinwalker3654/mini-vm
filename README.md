@@ -31,8 +31,8 @@ hlt
 string msg1 "hello\n"
 string msg2 "message for loop\n"
 
-number num1 1
-number num2 2
+number len1 6
+number len2 18
 
 mov 10 R2
 cmp 10 R2
@@ -47,7 +47,7 @@ je label2
 .label2
     mov 1 R0
     mov msg1 R1
-    mov 6 R2
+    load len1 R2
     syscall
 
     store 104 538
@@ -55,11 +55,12 @@ je label2
     store 10 540
 
     mov 1 R0
-    mov 538 R1
+    load len2 R1
     mov 3 R2
     syscall
 
     mov 0 R3
+
 .startloop
     cmp 10 R3
     jge endloop
@@ -86,7 +87,7 @@ je label2
     hlt
 # now the register R1 is 10 not 3, because we skiped the label1, the R4 is 105 because we loaded the value from the address 536
 # and it also prints to the screen hello and hi(because we store the characters manually) 
-# beacause of the sys_write AND it loops through 10 and prints "message for loop" and now the registers R4 R5 and R6 are equal to 105 1 2
+# beacause of the sys_write AND it loops through 10 and prints "message for loop" and now the registers R4 R5 and R6 are equal to 105 6 18
 ```
 
 ## compile

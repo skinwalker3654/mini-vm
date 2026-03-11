@@ -2,8 +2,8 @@
 string msg1 "hello\n"
 string msg2 "message from loop\n"
 
-number num1 1
-number num2 2
+number len1 6
+number len2 18
 
 # here we do a comparation and decide in wich label the cpu should jmp
 mov 10 R2
@@ -20,7 +20,7 @@ je label2
     # the cpu jumped on the label2 because the R2 is equal to 10 and we print the first value "hello\n"
     mov 1 R0
     mov msg1 R1
-    mov 6 R2
+    load len1 R2
     syscall
 
     # we store manualy the word "hi\n" in the code section after the "hello\n"
@@ -30,7 +30,7 @@ je label2
 
     # we now print the "hi\n"
     mov 1 R0
-    mov 538 R1
+    load len2 R1
     mov 3 R2
     syscall
 

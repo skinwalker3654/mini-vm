@@ -766,6 +766,28 @@ void assembler(cpu_t *cpu, const char *file_name) {
         }
 
         if(strcmp(tokens[0],"load")==0) {
+            char *endPtr;
+            int address = strtol(tokens[1],&endPtr,10);
+            if(*endPtr != '\0') {
+                address = get_value_pc(cpu,tokens[1]);
+                if(address == -1) {
+                    printf("Invalid address '%s'\n",tokens[1]);
+                    return;
+                }
+
+                int reg = register_identity(tokens[2]);
+                if(reg == -1) {
+                    printf("Invalid register '%s'\n",tokens[2]);
+                    return;
+                }
+
+                cpu->memory[cpc++] = LOAD;
+                cpu->memory[cpc++] = address;
+                cpu->memory[cpc++] = reg;
+
+                continue;
+            }
+
             int reg = register_identity(tokens[2]);
             if(reg == -1) {
                 printf("Invalid register '%s'\n",tokens[2]);
@@ -774,7 +796,7 @@ void assembler(cpu_t *cpu, const char *file_name) {
             }
 
             cpu->memory[cpc++] = LOAD;
-            cpu->memory[cpc++] = atoi(tokens[1]);
+            cpu->memory[cpc++] = address;
             cpu->memory[cpc++] = reg;
 
             continue;
@@ -964,7 +986,7 @@ int main(int argc,char *argv[]) {
     printf("%ld\n",cpu.regs[1]);
     printf("%ld\n",cpu.regs[4]);
 
-    /*we check if the registers 5 and 6 have the values of 1 and 2 because we loaded them from the memory*/
+    /*we check if the registers 5 and 6 have the values of 6 and 18 because we loaded them from the memory*/
     printf("%ld\n",cpu.regs[5]);
     printf("%ld\n",cpu.regs[6]);
 
