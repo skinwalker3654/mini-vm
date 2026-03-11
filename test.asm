@@ -60,7 +60,7 @@ je label2
     div 2 R1
     mul 5 R1
 
-    # R4 should be 105 now because this is the value stored in the address of 537
+    # R4 should be 105 now because this is the value stored in the address of 539
     load 539 R4
     load 536 R5
     load 537 R6
