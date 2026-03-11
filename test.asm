@@ -30,7 +30,7 @@ je label2
 
     # we now print the "hi\n"
     mov 1 R0
-    load len2 R1
+    mov 538 R1
     mov 3 R2
     syscall
 
@@ -45,7 +45,7 @@ je label2
     # we print the message "message from loop\n"
     mov 1 R0
     mov msg2 R1
-    mov 18 R2
+    load len2 R2
     syscall
 
     # increasing the counter variable

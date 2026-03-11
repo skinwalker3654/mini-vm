@@ -27,9 +27,8 @@ hlt
 ```
 ## example of program
 ```bash
-# we skip the label1 because the R2 is equal to 10 so the comparation is true
 string msg1 "hello\n"
-string msg2 "message for loop\n"
+string msg2 "message from loop\n"
 
 number len1 6
 number len2 18
@@ -55,7 +54,7 @@ je label2
     store 10 540
 
     mov 1 R0
-    load len2 R1
+    mov 538 R1
     mov 3 R2
     syscall
 
@@ -67,7 +66,7 @@ je label2
 
     mov 1 R0
     mov msg2 R1
-    mov 17 R2
+    load len2 R2
     syscall
 
     inc R3
@@ -85,6 +84,7 @@ je label2
     load 537 R6
 
     hlt
+
 # now the register R1 is 10 not 3, because we skiped the label1, the R4 is 105 because we loaded the value from the address 536
 # and it also prints to the screen hello and hi(because we store the characters manually) 
 # beacause of the sys_write AND it loops through 10 and prints "message for loop" and now the registers R4 R5 and R6 are equal to 105 6 18
