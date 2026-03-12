@@ -130,7 +130,7 @@ vm file.asm
 
 new_name file.asm
 
-# if you want to remove it you should do
+# if you want to remove it from your system you should do
 sudo rm /usr/bin/vm #OR 
 sudo rm /usr/bin/new_name
 
