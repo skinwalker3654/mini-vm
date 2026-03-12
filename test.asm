@@ -62,7 +62,8 @@ je label2
 
     # R4 should be 105 now because this is the value stored in the address of 539
     load 539 R4
-    load 536 R5
-    load 537 R6
+    load len1 R5
+    load len2 R6
+    store 2 len1
 
     hlt

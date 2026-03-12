@@ -80,8 +80,9 @@ je label2
     mul 5 R1
 
     load 539 R4
-    load 536 R5
-    load 537 R6
+    load len1 R5
+    load len2 R6
+    store 2 len1
 
     hlt
 
@@ -96,19 +97,44 @@ je label2
 vim vm.c
 
 # then go to the bottom of the file and remove this lines of code
-/*we check if the program skiped the label1 and we check if the value on register1 is 10 and not 3 and if register 4 has loaded the 105 succesfully*/
-printf("%ld\n",cpu.regs[1]);
-printf("%ld\n",cpu.regs[4]);
+    /*we check if the program skiped the label1 and we check if the value on register1 is 10 and not 3 and if register 4 has loaded the 105 succesfully*/
+    printf("%ld\n",cpu.regs[1]);
+    printf("%ld\n",cpu.regs[4]);
 
-/*we check if the registers 5 and 6 have the values of 1 and 2 because we loaded them from the memory*/
-printf("%ld\n",cpu.regs[5]);
-printf("%ld\n",cpu.regs[6]);
+    /*we check if the registers 5 and 6 have the values of 1 and 2 because we loaded them from the memory*/
+    printf("%ld\n",cpu.regs[5]);
+    printf("%ld\n",cpu.regs[6]); 
+
+    /*after the store we print the value on the address 536*/
+    printf("%ld\n",cpu.memory[536]);
 
 # and lastly run
 gcc vm.c -o vm
 
 # now to run it you simply do
 ./vm assembly_file # you put the name of the file with the assembly code
+```
+
+## install to your system
+```bash
+# to install it on you system you must first compile the project by using the guidline you show right above and then you do
+sudo mv vm /usr/bin
+
+# this requires sudo administration so you have to use your sudo password to move the executable in the bins folder
+# after that you can completely delete the folder mini-vm and execute assembly programs in the custom cpu with
+
+vm file.asm
+
+# make sure you dont have an alias with the name vm on you bashrc otherwise you either change the alias OR change the name of the executable and use that instead
+# example
+
+new_name file.asm
+
+# if you want to remove it you should do
+sudo rm /usr/bin/vm #OR 
+sudo rm /usr/bin/new_name
+
+# that operation also requires the sudo password
 ```
 
 ## run test

@@ -805,19 +805,49 @@ void assembler(cpu_t *cpu, const char *file_name) {
         if(strcmp(tokens[0],"store")==0) {
             if(tokens[1][0]=='R') {
                 int reg = register_identity(tokens[1]);
-
                 if(reg == -1) {
                     printf("Invalid register '%s'\n",tokens[1]);
                     fclose(file); 
                     return; 
                 }
 
+                char *endPtr;
+                int address = strtol(tokens[2],&endPtr,10);
+                if(*endPtr != '\0') {
+                    address = get_value_pc(cpu,tokens[2]);
+                    if(address == -1) {
+                        printf("Invalid address '%s'\n",tokens[2]);
+                        return;
+                    }
+
+                    cpu->memory[cpc++] = STORER;
+                    cpu->memory[cpc++] = reg;
+                    cpu->memory[cpc++]  = address;
+
+                    continue;
+                }
+                
                 cpu->memory[cpc++] = STORER;
                 cpu->memory[cpc++] = reg;
-                cpu->memory[cpc++] = atoi(tokens[2]);
+                cpu->memory[cpc++] = address;
             } else {
                 int value = atoi(tokens[1]);
-                int address = atoi(tokens[2]);
+                char *endPtr;
+
+                int address = strtol(tokens[2],&endPtr,10);
+                if(*endPtr != '\0') {
+                    address = get_value_pc(cpu,tokens[2]);
+                    if(address == -1) {
+                        printf("Invalid address '%s'\n",tokens[2]);
+                        return;
+                    }
+
+                    cpu->memory[cpc++] = STOREI;
+                    cpu->memory[cpc++] = value;
+                    cpu->memory[cpc++] = address;
+
+                    continue;
+                }
 
                 cpu->memory[cpc++] = STOREI;
                 cpu->memory[cpc++] = value;
@@ -990,6 +1020,8 @@ int main(int argc,char *argv[]) {
     printf("%ld\n",cpu.regs[5]);
     printf("%ld\n",cpu.regs[6]);
 
-    return 0;
+    /*after the store we print the value on the address 536*/
+    printf("%ld\n",cpu.memory[536]);
 
+    return 0;
 }
