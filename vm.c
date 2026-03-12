@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 
+int number = 10;
 #define MEM_SIZE 1024
 #define REG_COUNT 10
 #define BUFF_SIZE 256
