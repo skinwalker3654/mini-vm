@@ -118,7 +118,7 @@ gcc vm.c -o vm
 ## install to your system
 ```bash
 # to install it on you system you must first compile the project by using the guidline you show right above and then you do
-sudo mv vm /usr/bin
+sudo mv vm /usr/bin/
 
 # this requires sudo administration so you have to use your sudo password to move the executable in the bins folder
 # after that you can completely delete the folder mini-vm and execute assembly programs in the custom cpu with
