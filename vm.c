@@ -429,7 +429,7 @@ void assembler(cpu_t *cpu, const char *file_name) {
             int address = cpu->vpc;
             int number = atoi(tokens[2]);
             for(int i=0; i<number; i++) {
-                cpu->memory[cpu->vpc] = 32;
+                cpu->memory[cpu->vpc] = 0;
                 cpu->vpc++;
             }
 
