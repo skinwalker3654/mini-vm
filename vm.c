@@ -402,6 +402,24 @@ void assembler(cpu_t *cpu, const char *file_name) {
             continue;
         }
 
+        if(strcmp(tokens[0],"unitialized")==0) {
+            char name[256];
+            strcpy(name,tokens[1]);
+            int address = cpu->vpc;
+
+            int number = atoi(tokens[2]);
+            for(int i=0; i<number; i++) {
+                cpu->memory[cpu->vpc] = 32;
+                cpu->vpc++;
+            }
+
+            strcpy(cpu->values.values[cpu->values.counter].value_name,name);
+            cpu->values.values[cpu->values.counter].value_address = address;
+            cpu->values.counter++;
+
+            continue;
+        }
+
         if(strcmp(tokens[0],"number")==0) {
             char name[256];
             strcpy(name,tokens[1]);
@@ -544,6 +562,7 @@ void assembler(cpu_t *cpu, const char *file_name) {
         if(tokens[0][0] == '.') continue; 
         if(strcmp(tokens[0],"string")==0) continue;
         if(strcmp(tokens[0],"number")==0) continue;
+        if(strcmp(tokens[0],"unitialized")==0) continue;
 
         if(strcmp(tokens[0],"syscall")==0) {
             cpu->memory[cpc++] = SYSCALL;
@@ -1022,6 +1041,11 @@ int main(int argc,char *argv[]) {
 
     /*after the store we print the value on the address 536*/
     printf("%ld\n",cpu.memory[536]);
+
+    /*the initialized values are stored with whitespaces so this should print 3 lines with spaces only because we intialized 3 bytes for the variable*/
+    for(int i=538; i<538+3; i++) {
+        printf("%c\n",(char)cpu.memory[i]);
+    }
 
     return 0;
 }

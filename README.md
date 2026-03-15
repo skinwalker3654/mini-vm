@@ -33,6 +33,8 @@ string msg2 "message from loop\n"
 number len1 6
 number len2 18
 
+unitialized buffer 3
+
 mov 10 R2
 cmp 10 R2
 je label2
@@ -49,12 +51,12 @@ je label2
     load len1 R2
     syscall
 
-    store 104 538
-    store 105 539
-    store 10 540
+    store 104 541
+    store 105 542
+    store 10 543
 
     mov 1 R0
-    mov 538 R1
+    mov 541 R1
     mov 3 R2
     syscall
 
@@ -79,7 +81,7 @@ je label2
     div 2 R1
     mul 5 R1
 
-    load 539 R4
+    load 542 R4
     load len1 R5
     load len2 R6
     store 2 len1
@@ -107,6 +109,11 @@ vim vm.c
 
     /*after the store we print the value on the address 536*/
     printf("%ld\n",cpu.memory[536]);
+
+    /*the initialized values are stored with whitespaces so this should print 3 lines with spaces only because we intialized 3 bytes for the variable*/
+    for(int i=538; i<538+3; i++) {
+        printf("%c\n",(char)cpu.memory[i]);
+    }
 
 # and lastly run
 gcc vm.c -o vm
