@@ -2,8 +2,9 @@
 string msg1 "hello\n"
 string msg2 "message from loop\n"
 
-number len1 6
-number len2 18
+number len1 size msg1
+number len2 size msg2
+number len3 3
 
 unitialized buffer 3
 
@@ -26,14 +27,14 @@ je label2
     syscall
 
     # we store manualy the word "hi\n" in the code section after the "hello\n"
-    store 104 542
-    store 105 543
-    store 10 544
+    store 104 543
+    store 105 544
+    store 10 545
 
     # we now print the "hi\n"
     mov 1 R0
-    mov 542 R1
-    mov 3 R2
+    mov 543 R1
+    load len3 R2
     syscall
 
     # we set a counter variable
@@ -63,7 +64,7 @@ je label2
     mul 5 R1
 
     # R4 should be 105 now because this is the value stored in the address of 539
-    load 543 R4
+    load 544 R4
     load len1 R5
     load len2 R6
     store 2 len1
@@ -75,7 +76,7 @@ je label2
     syscall
 
     # we put a new line at the end
-    store 10 541
+    store 10 542
 
     # we print users input
     mov 1 R0

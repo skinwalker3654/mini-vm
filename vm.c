@@ -427,7 +427,6 @@ void assembler(cpu_t *cpu, const char *file_name) {
             char name[256];
             strcpy(name,tokens[1]);
             int address = cpu->vpc;
-
             int number = atoi(tokens[2]);
             for(int i=0; i<number; i++) {
                 cpu->memory[cpu->vpc] = 32;
@@ -447,7 +446,44 @@ void assembler(cpu_t *cpu, const char *file_name) {
             strcpy(name,tokens[1]);
             int address = cpu->vpc;
 
-            int number = atoi(tokens[2]);
+            char *endPtr;
+            int number = strtol(tokens[2],&endPtr,10);
+            if(*endPtr != '\0') {
+                if(strcmp(tokens[2],"size")==0) {
+                    tokens[3][strcspn(tokens[3],"\n")] = 0;
+
+                    char variable[256];
+                    strcpy(variable,tokens[3]);
+
+                    int found = -1;
+                    for(int i=0; i<cpu->values.counter; i++) {
+                        if(strcmp(variable,cpu->values.values[i].value_name)==0) {
+                            found = i;
+                            break;
+                        }
+                    }
+
+                    if(found != -1) {
+                        cpu->memory[cpu->vpc] = cpu->values.values[found].len;
+                        cpu->vpc++;
+
+
+                        strcpy(cpu->values.values[cpu->values.counter].value_name,name);
+                        cpu->values.values[cpu->values.counter].value_address = address;
+                        cpu->values.values[cpu->values.counter].len = 1;
+                        cpu->values.counter++;
+
+                        continue;
+                    }
+
+                    printf("Value '%s' not found\n",tokens[3]);
+                    return;
+                }
+
+                printf("Invalid number '%s'\n",tokens[2]);
+                return;
+            }
+
             cpu->memory[cpu->vpc] = number;
             cpu->vpc++;
 
