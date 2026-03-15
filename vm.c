@@ -299,6 +299,9 @@ void execute_byte_code(cpu_t *cpu) {
                         fgets(string,len+1,stdin);
                         string[strcspn(string,"\n")] = 0;
 
+                        int ch;
+                        while((ch = getchar())!='\n' && ch!=EOF);
+
                         for(int i=0; i<len; i++) {
                             cpu->memory[addr + i] = (int)(string[i]);
                         }
