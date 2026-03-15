@@ -26,13 +26,13 @@ je label2
     syscall
 
     # we store manualy the word "hi\n" in the code section after the "hello\n"
-    store 104 541
-    store 105 542
-    store 10 543
+    store 104 542
+    store 105 543
+    store 10 544
 
     # we now print the "hi\n"
     mov 1 R0
-    mov 541 R1
+    mov 542 R1
     mov 3 R2
     syscall
 
@@ -63,9 +63,24 @@ je label2
     mul 5 R1
 
     # R4 should be 105 now because this is the value stored in the address of 539
-    load 542 R4
+    load 543 R4
     load len1 R5
     load len2 R6
     store 2 len1
+
+    # we get users input
+    mov 2 R0
+    mov buffer R1
+    mov 3 R2
+    syscall
+
+    # we put a new line at the end
+    store 10 541
+
+    # we print users input
+    mov 1 R0
+    mov buffer R1
+    mov 4 R2
+    syscall
 
     hlt

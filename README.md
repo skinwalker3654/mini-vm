@@ -25,6 +25,13 @@ jne
 cmp
 hlt
 ```
+
+## sys_calls
+```bash
+sys_write 1
+sys_read 2
+```
+
 ## example of program
 ```bash
 string msg1 "hello\n"
@@ -51,12 +58,12 @@ je label2
     load len1 R2
     syscall
 
-    store 104 541
-    store 105 542
-    store 10 543
+    store 104 542
+    store 105 543
+    store 10 544
 
     mov 1 R0
-    mov 541 R1
+    mov 542 R1
     mov 3 R2
     syscall
 
@@ -81,10 +88,22 @@ je label2
     div 2 R1
     mul 5 R1
 
-    load 542 R4
+    load 543 R4
     load len1 R5
     load len2 R6
     store 2 len1
+
+    mov 2 R0
+    mov buffer R1
+    mov 3 R2
+    syscall
+
+    store 10 541
+
+    mov 1 R0
+    mov buffer R1
+    mov 4 R2
+    syscall
 
     hlt
 
@@ -109,11 +128,6 @@ vim vm.c
 
     /*after the store we print the value on the address 536*/
     printf("%ld\n",cpu.memory[536]);
-
-    /*the initialized values are stored with whitespaces so this should print 3 lines with spaces only because we intialized 3 bytes for the variable*/
-    for(int i=538; i<538+3; i++) {
-        printf("%c\n",(char)cpu.memory[i]);
-    }
 
 # and lastly run
 gcc vm.c -o vm

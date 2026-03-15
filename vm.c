@@ -14,6 +14,7 @@
 typedef struct value_t {
     char value_name[BUFF_SIZE];
     int value_address;
+    int len;
 } value_t;
 
 typedef struct label_t {
@@ -72,6 +73,7 @@ typedef struct cpu_t {
 #define SYSCALL 21
 
 #define SYS_WRITE 1
+#define SYS_READ 2
 
 int register_identity(char *string) {
     if(strlen(string) != 2) return -1;
@@ -289,11 +291,27 @@ void execute_byte_code(cpu_t *cpu) {
                         break;
                     }
 
+                    case SYS_READ: {
+                        int addr = cpu->regs[1];
+                        int len = cpu->regs[2];
+
+                        char string[256];
+                        fgets(string,len+1,stdin);
+                        string[strcspn(string,"\n")] = 0;
+
+                        for(int i=0; i<len; i++) {
+                            cpu->memory[addr + i] = (int)(string[i]);
+                        }
+
+                        break;
+                    }
+
                     default:
                         printf("Invalid syscall %ld\n",cpu->regs[0]);
                         cpu->running = 0;
                         break;
                 }
+
                 break;
             }
             default:
@@ -415,6 +433,7 @@ void assembler(cpu_t *cpu, const char *file_name) {
 
             strcpy(cpu->values.values[cpu->values.counter].value_name,name);
             cpu->values.values[cpu->values.counter].value_address = address;
+            cpu->values.values[cpu->values.counter].len = number;
             cpu->values.counter++;
 
             continue;
@@ -431,6 +450,7 @@ void assembler(cpu_t *cpu, const char *file_name) {
 
             strcpy(cpu->values.values[cpu->values.counter].value_name,name);
             cpu->values.values[cpu->values.counter].value_address = address;
+            cpu->values.values[cpu->values.counter].len = 1;
             cpu->values.counter++;
 
             continue;
@@ -448,6 +468,7 @@ void assembler(cpu_t *cpu, const char *file_name) {
 
             strcpy(cpu->values.values[cpu->values.counter].value_name,name);
             cpu->values.values[cpu->values.counter].value_address = address;
+            cpu->values.values[cpu->values.counter].len = strlen(tokens[2]);
             cpu->values.counter++;
 
             continue;
@@ -1041,11 +1062,6 @@ int main(int argc,char *argv[]) {
 
     /*after the store we print the value on the address 536*/
     printf("%ld\n",cpu.memory[536]);
-
-    /*the initialized values are stored with whitespaces so this should print 3 lines with spaces only because we intialized 3 bytes for the variable*/
-    for(int i=538; i<538+3; i++) {
-        printf("%c\n",(char)cpu.memory[i]);
-    }
 
     return 0;
 }
