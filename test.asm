@@ -56,13 +56,6 @@ je label2
     jmp startloop
 
 .endloop
-    # a simple calculation that results to 10
-    mov 2 R0
-    mov R0 R1
-    add 2 R1
-    div 2 R1
-    mul 5 R1
-
     # R4 should be 105 now because this is the value stored in the address of 539
     load 544 R4
     load len1 R5
@@ -83,5 +76,13 @@ je label2
     mov buffer R1
     mov 4 R2
     syscall
+
+    # a simple calculation that results to 10
+    mov 2 R0
+    mov R0 R1
+    add 2 R1
+    div 2 R1
+    mul 5 R1
+
 
     hlt

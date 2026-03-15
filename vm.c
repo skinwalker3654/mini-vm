@@ -295,7 +295,7 @@ void execute_byte_code(cpu_t *cpu) {
                         int addr = cpu->regs[1];
                         int len = cpu->regs[2];
 
-                        char string[256];
+                        char string[256] = {0};
                         fgets(string,len+1,stdin);
                         string[strcspn(string,"\n")] = 0;
 
