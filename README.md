@@ -161,7 +161,10 @@ sudo rm /usr/bin/new_name
 
 ## run test
 ```bash
-make test
+make test # run the test.asm
+make calculator
+# run the calculator program (the first test thought requires some print statements to validate the values on the registers or memory so the program prints extra numbers even if the
+# assembly code dosent so if you wanna run the vm normaly you should check how to install it)
 ```
 
 ## delete test
