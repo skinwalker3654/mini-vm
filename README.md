@@ -24,6 +24,10 @@ jge
 jne
 cmp
 hlt
+push
+pop
+call 
+ret
 ```
 
 ## sys_calls
@@ -59,12 +63,12 @@ je label2
     load len1 R2
     syscall
 
-    store 104 543
-    store 105 544
-    store 10 545
+    store 104 372
+    store 105 373
+    store 10 374
 
     mov 1 R0
-    mov 543 R1
+    mov 372 R1
     load len3 R2
     syscall
 
@@ -83,13 +87,7 @@ je label2
     jmp startloop
 
 .endloop
-    mov 2 R0
-    mov R0 R1
-    add 2 R1
-    div 2 R1
-    mul 5 R1
-
-    load 544 R4
+    load 373 R4
     load len1 R5
     load len2 R6
     store 2 len1
@@ -99,18 +97,38 @@ je label2
     mov 3 R2
     syscall
 
-    store 10 542
+    store 10 371
 
     mov 1 R0
     mov buffer R1
     mov 4 R2
     syscall
 
+    mov 2 R0
+    mov R0 R1
+    add 2 R1
+    div 2 R1
+    mul 5 R1
+ 
+    push 20
+    pop R5
+
+    call func1
+    call func2
+
     hlt
 
-# now the register R1 is 10 not 3, because we skiped the label1, the R4 is 105 because we loaded the value from the address 536
-# and it also prints to the screen hello and hi(because we store the characters manually) 
-# beacause of the sys_write AND it loops through 10 and prints "message for loop" and now the registers R4 R5 and R6 are equal to 105 6 18
+.func1
+    mov 600 R7
+    ret
+
+.func2
+    mov 700 R8
+    ret
+
+mov 1000 R7
+mov 2000 R8
+
 ```
 
 ## compile
@@ -127,8 +145,15 @@ vim vm.c
     printf("%ld\n",cpu.regs[5]);
     printf("%ld\n",cpu.regs[6]); 
 
-    /*after the store we print the value on the address 536*/
-    printf("%ld\n",cpu.memory[536]);
+    /*after the store we print the value on the address 365*/
+    printf("%ld\n",cpu.memory[365]);
+
+    /*this is from the stak*/
+    printf("%ld\n",cpu.regs[5]);
+
+    /*this should print 600 and 700 not 1000 and 2000*/
+    printf("%ld\n",cpu.regs[7]);
+    printf("%ld\n",cpu.regs[8]);
 
 # and lastly run
 gcc vm.c -o vm

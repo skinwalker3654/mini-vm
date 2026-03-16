@@ -9,7 +9,7 @@
 #define BUFF_SIZE 256
 #define MAX_LABELS 100
 #define MAX_VALUES 100
-#define VPC 512
+#define VPC 341
 
 typedef struct value_t {
     char value_name[BUFF_SIZE];
@@ -37,6 +37,7 @@ typedef struct cpu_t {
     uint64_t regs[REG_COUNT];
     uint64_t cpc;
     uint64_t vpc;
+    uint64_t sp;
     labels labels;
     values values;
     int zflag;
@@ -71,6 +72,11 @@ typedef struct cpu_t {
 #define STORER 23
 #define LOAD 26
 #define SYSCALL 21
+#define PUSHI 27
+#define PUSHR 28
+#define POP 29
+#define CALL 30
+#define RET 31
 
 #define SYS_WRITE 1
 #define SYS_READ 2
@@ -115,7 +121,7 @@ int get_label_pc(cpu_t *cpu, const char *name) {
 void execute_byte_code(cpu_t *cpu) {
     cpu->running = 1;
     while(cpu->running) {
-        if(cpu->cpc == 512) {
+        if(cpu->cpc == 341) {
             printf("Code overflow\n");
             return;
         }
@@ -224,6 +230,32 @@ void execute_byte_code(cpu_t *cpu) {
                 int result = cpu->regs[regr] - cpu->regs[regv];
                 cpu->zflag = (result == 0);
                 cpu->sflag = (result < 0);
+                break;
+            }
+            case PUSHI: {
+                 uint64_t value = cpu->memory[cpu->cpc++];
+                 cpu->memory[--cpu->sp] = value;
+                 break;
+            }
+            case PUSHR: {
+                uint64_t reg = cpu->memory[cpu->cpc++];
+                cpu->memory[--cpu->sp] = cpu->regs[reg];
+                break;
+            }
+            case POP: {
+                uint64_t reg = cpu->memory[cpu->cpc++];
+                cpu->regs[reg] = cpu->memory[cpu->sp++];
+                break;
+            }
+            case CALL: {
+                uint64_t address = cpu->memory[cpu->cpc++];
+                cpu->memory[--cpu->sp] = cpu->cpc;
+                cpu->cpc = address;
+                break;
+            }
+            case RET: {
+                uint64_t address = cpu->memory[cpu->sp++];
+                cpu->cpc = address;
                 break;
             }
             case JMP: {
@@ -537,8 +569,11 @@ void assembler(cpu_t *cpu, const char *file_name) {
                 !strcmp(tokens[0],"jge") ||
                 !strcmp(tokens[0],"jne") ||
                 !strcmp(tokens[0],"inc") ||
-                !strcmp(tokens[0],"dec")) temp_cpc+=2;
-        else if(strcmp(tokens[0],"hlt")==0 || strcmp(tokens[0],"syscall")==0) temp_cpc+=1;
+                !strcmp(tokens[0],"dec") ||
+                !strcmp(tokens[0],"push") ||
+                !strcmp(tokens[0],"pop") ||
+                !strcmp(tokens[0],"call")) temp_cpc+=2;
+        else if(strcmp(tokens[0],"hlt")==0 || strcmp(tokens[0],"syscall")==0 || strcmp(tokens[0],"ret")==0) temp_cpc+=1;
         else { 
             printf("Invalid opcode '%s'\n",tokens[0]);
             fclose(file);
@@ -762,6 +797,60 @@ void assembler(cpu_t *cpu, const char *file_name) {
             continue;
         }
 
+        if(strcmp(tokens[0],"push")==0) {
+            if(tokens[1][0] == 'R') {
+                int reg = register_identity(tokens[1]);
+                if(reg == -1) {
+                    printf("Invalid register '%s'\n",tokens[1]);
+                    fclose(file);
+                    return;
+                }
+
+                cpu->memory[cpc++] = PUSHR;
+                cpu->memory[cpc++] = reg;
+
+                continue;
+            } else {
+                int value = atoi(tokens[1]);
+                cpu->memory[cpc++] = PUSHI;
+                cpu->memory[cpc++] = value;
+
+                continue;
+            }
+        }
+
+        if(strcmp(tokens[0],"pop")==0) {
+            int reg = register_identity(tokens[1]);
+            if(reg == -1) {
+                printf("Invalid register '%s'\n",tokens[1]);
+                fclose(file);
+                return;
+            }
+
+            cpu->memory[cpc++] = POP;
+            cpu->memory[cpc++] = reg;
+
+            continue;
+        }
+
+        if(strcmp(tokens[0],"call")==0) {
+            int address = get_label_pc(cpu,tokens[1]);
+            if(address == -1) {
+                printf("Label '%s' does not exists\n",tokens[1]);
+                fclose(file);
+                return;
+            }
+
+            cpu->memory[cpc++] = CALL;
+            cpu->memory[cpc++] = address;
+
+            continue;
+        }
+
+        if(strcmp(tokens[0],"ret")==0) {
+            cpu->memory[cpc++] = RET;
+            continue;
+        }
 
         if(strcmp(tokens[0],"cmp")==0) {
             if(tokens[1][0]=='R') {
@@ -817,6 +906,7 @@ void assembler(cpu_t *cpu, const char *file_name) {
                     int address = get_value_pc(cpu,tokens[1]);
                     if(address == -1) {
                         printf("Error: value '%s' does not exists\n",tokens[1]);
+                        fclose(file);
                         return;
                     }
 
@@ -856,17 +946,20 @@ void assembler(cpu_t *cpu, const char *file_name) {
                 address = get_value_pc(cpu,tokens[1]);
                 if(address == -1) {
                     printf("Invalid address '%s'\n",tokens[1]);
+                    fclose(file);
                     return;
                 }
 
                 int reg = register_identity(tokens[2]);
                 if(reg == -1) {
                     printf("Invalid register '%s'\n",tokens[2]);
+                    fclose(file);
                     return;
                 }
 
-                if(address < 512 || address > 1023) {
+                if(address < 341 || address > 681) {
                     printf("Invalid address '%d' out of code section\n",address);
+                    fclose(file);
                     return;
                 }
 
@@ -884,8 +977,9 @@ void assembler(cpu_t *cpu, const char *file_name) {
                 return;
             }
 
-            if(address < 512 || address > 1023) {
+            if(address < 341 || address > 681) {
                 printf("Invalid address '%d' out of code section\n",address);
+                fclose(file);
                 return;
             }
             
@@ -911,11 +1005,13 @@ void assembler(cpu_t *cpu, const char *file_name) {
                     address = get_value_pc(cpu,tokens[2]);
                     if(address == -1) {
                         printf("Invalid address '%s'\n",tokens[2]);
+                        fclose(file);
                         return;
                     }
 
-                    if(address < 512 || address > 1023) {
+                    if(address < 341 || address > 681) {
                         printf("Invalid address '%d' out of code section\n",address);
+                        fclose(file);
                         return; 
                     }
 
@@ -927,8 +1023,9 @@ void assembler(cpu_t *cpu, const char *file_name) {
                 }
                 
              
-                if(address < 512 || address > 1023) {
+                if(address < 341 || address > 681) {
                     printf("Invalid address '%d' out of code section\n",address);
+                    fclose(file);
                     return; 
                 }
 
@@ -944,11 +1041,13 @@ void assembler(cpu_t *cpu, const char *file_name) {
                     address = get_value_pc(cpu,tokens[2]);
                     if(address == -1) {
                         printf("Invalid address '%s'\n",tokens[2]);
+                        fclose(file);
                         return;
                     }
 
-                    if(address < 512 || address > 1023) {
+                    if(address < 341 || address > 681) {
                         printf("Invalid address '%d' out of code section\n",address);
+                        fclose(file);
                         return; 
                     }
 
@@ -960,8 +1059,9 @@ void assembler(cpu_t *cpu, const char *file_name) {
                     continue;
                 }
 
-                if(address < 512 || address > 1023) {
+                if(address < 341 || address > 681) {
                     printf("Invalid address '%d' out of code section\n",address);
+                    fclose(file);
                     return; 
                 }
 
@@ -1124,6 +1224,7 @@ int main(int argc,char *argv[]) {
 
     cpu_t cpu = {-1};
     cpu.vpc = VPC;
+    cpu.sp = 1024;
 
     assembler(&cpu,argv[1]);
     execute_byte_code(&cpu);
@@ -1136,8 +1237,15 @@ int main(int argc,char *argv[]) {
     printf("%ld\n",cpu.regs[5]);
     printf("%ld\n",cpu.regs[6]);
 
-    /*after the store we print the value on the address 536*/
-    printf("%ld\n",cpu.memory[536]);
+    /*after the store we print the value on the address 365*/
+    printf("%ld\n",cpu.memory[365]);
+
+    /*this is from the stak*/
+    printf("%ld\n",cpu.regs[5]);
+    
+    /*this should print 600 and 700 not 1000 and 2000*/
+    printf("%ld\n",cpu.regs[7]);
+    printf("%ld\n",cpu.regs[8]);
 
     return 0;
 }

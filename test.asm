@@ -27,13 +27,13 @@ je label2
     syscall
 
     # we store manualy the word "hi\n" in the code section after the "hello\n"
-    store 104 543
-    store 105 544
-    store 10 545
+    store 104 372
+    store 105 373
+    store 10 374
 
     # we now print the "hi\n"
     mov 1 R0
-    mov 543 R1
+    mov 372 R1
     load len3 R2
     syscall
 
@@ -57,7 +57,7 @@ je label2
 
 .endloop
     # R4 should be 105 now because this is the value stored in the address of 539
-    load 544 R4
+    load 373 R4
     load len1 R5
     load len2 R6
     store 2 len1
@@ -69,7 +69,7 @@ je label2
     syscall
 
     # we put a new line at the end
-    store 10 542
+    store 10 371
 
     # we print users input
     mov 1 R0
@@ -83,6 +83,25 @@ je label2
     add 2 R1
     div 2 R1
     mul 5 R1
+ 
+    push 20
+    pop R5
 
+    call func1
+    call func2
 
     hlt
+
+# function1
+.func1
+    mov 600 R7
+    ret
+
+# function2
+.func2
+    mov 700 R8
+    ret
+
+# this are the values that the R7 and R8 should have if the call opcode does not work corectly
+mov 1000 R7
+mov 2000 R8
