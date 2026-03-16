@@ -115,6 +115,11 @@ int get_label_pc(cpu_t *cpu, const char *name) {
 void execute_byte_code(cpu_t *cpu) {
     cpu->running = 1;
     while(cpu->running) {
+        if(cpu->cpc == 512) {
+            printf("Code overflow\n");
+            return;
+        }
+
         uint64_t opcode = cpu->memory[cpu->cpc++];
         switch(opcode) {
             case MOVI: {
@@ -860,6 +865,11 @@ void assembler(cpu_t *cpu, const char *file_name) {
                     return;
                 }
 
+                if(address < 512 || address > 1023) {
+                    printf("Invalid address '%d' out of code section\n",address);
+                    return;
+                }
+
                 cpu->memory[cpc++] = LOAD;
                 cpu->memory[cpc++] = address;
                 cpu->memory[cpc++] = reg;
@@ -874,6 +884,11 @@ void assembler(cpu_t *cpu, const char *file_name) {
                 return;
             }
 
+            if(address < 512 || address > 1023) {
+                printf("Invalid address '%d' out of code section\n",address);
+                return;
+            }
+            
             cpu->memory[cpc++] = LOAD;
             cpu->memory[cpc++] = address;
             cpu->memory[cpc++] = reg;
@@ -899,6 +914,11 @@ void assembler(cpu_t *cpu, const char *file_name) {
                         return;
                     }
 
+                    if(address < 512 || address > 1023) {
+                        printf("Invalid address '%d' out of code section\n",address);
+                        return; 
+                    }
+
                     cpu->memory[cpc++] = STORER;
                     cpu->memory[cpc++] = reg;
                     cpu->memory[cpc++]  = address;
@@ -906,6 +926,12 @@ void assembler(cpu_t *cpu, const char *file_name) {
                     continue;
                 }
                 
+             
+                if(address < 512 || address > 1023) {
+                    printf("Invalid address '%d' out of code section\n",address);
+                    return; 
+                }
+
                 cpu->memory[cpc++] = STORER;
                 cpu->memory[cpc++] = reg;
                 cpu->memory[cpc++] = address;
@@ -921,11 +947,22 @@ void assembler(cpu_t *cpu, const char *file_name) {
                         return;
                     }
 
+                    if(address < 512 || address > 1023) {
+                        printf("Invalid address '%d' out of code section\n",address);
+                        return; 
+                    }
+
+
                     cpu->memory[cpc++] = STOREI;
                     cpu->memory[cpc++] = value;
                     cpu->memory[cpc++] = address;
 
                     continue;
+                }
+
+                if(address < 512 || address > 1023) {
+                    printf("Invalid address '%d' out of code section\n",address);
+                    return; 
                 }
 
                 cpu->memory[cpc++] = STOREI;
